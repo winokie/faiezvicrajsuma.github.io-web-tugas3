@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Accounting Shop - Login and Register</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #app {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    width: 370px;
+    max-width: 95vw;
+    padding: 30px 40px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #764ba2;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+  input[type="text"]:focus,
+  input[type="password"]:focus,
+  input[type="email"]:focus,
+  input[type="date"]:focus,
+  input[type="number"]:focus {
+    border-color: #667eea;
+    outline: none;
+  }
+  button {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-radius: 8px;
+    background: #764ba2;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #5751ae;
+  }
+  #toggle-auth {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+  }
+  #toggle-auth:hover {
+    text-decoration: underline;
+  }
+  #error-msg {
+    color: #e74c3c;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: 700;
+  }
+  /* Accounting shop styles */
+  #shop {
+    display: none;
+    max-width: 720px;
+  }
+  #shop-header {
+    text-align: center;
+    color: #4a148c;
+  }
+  #logout-btn {
+    margin-bottom: 20px;
+    background: #e74c3c;
+    transition: background-color 0.3s ease;
+  }
+  #logout-btn:hover {
+    background: #b33225;
+  }
+  #data-form {
+    background: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+  }
+  #data-form .form-group {
+    margin-bottom: 15px;
+  }
+  #records-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+  }
+  #records-table th,
+  #records-table td {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+  #records-table th {
+    background: #764ba2;
+    color: white;
+  }
+  #records-table tbody tr:nth-child(even) {
+    background: #f3e8ff;
+  }
+  #records-table tbody tr:hover {
+    background: #d3b8ff;
+  }
+  #export-btn, #import-btn {
+    width: 48%;
+    display: inline-block;
+  }
+  #import-input {
+    display: none;
+  }
+  #welcome-msg {
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #4a148c;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Login/Register -->
+  <div id="auth-section">
+    <h1 id="auth-title">Login</h1>
+    <div id="error-msg"></div>
+    <form id="auth-form">
+      <div class="form-group" id="username-group" style="display:none;">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" id="auth-submit-btn">Login</button>
+    </form>
+    <div id="toggle-auth">Don't have an account? Register here</div>
+  </div>
+
+  <!-- Accounting Shop -->
+  <div id="shop">
+    <h1 id="shop-header">Accounting Shop</h1>
+    <div id="welcome-msg"></div>
+    <button id="logout-btn">Logout</button>
+    <form id="data-form">
+      <div class="form-group">
+        <label for="record-date">Date</label>
+        <input type="date" id="record-date" required />
+      </div>
+      <div class="form-group">
+        <label for="record-desc">Description</label>
+        <input type="text" id="record-desc" placeholder="e.g. Sale, Expense" required />
+      </div>
+      <div class="form-group">
+        <label for="record-amount">Amount</label>
+        <input type="number" id="record-amount" step="0.01" placeholder="0.00" required />
+      </div>
+      <button type="submit">Add Record</button>
+    </form>
+
+    <table id="records-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <input type="file" id="import-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+    <button id="export-btn">Export to Excel</button>
+    <button id="import-btn">Import from Excel</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Utilities
+  function $(id) { return document.getElementById(id); }
+  function show(element) { element.style.display = 'block'; }
+  function hide(element) { element.style.display = 'none'; }
+  function formatCurrency(value) {
+    return Number(value).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+  }
+
+  // Authentication Logic
+  const authTitle = $('auth-title');
+  const authForm = $('auth-form');
+  const toggleAuth = $('toggle-auth');
+  const authSubmitBtn = $('auth-submit-btn');
+  const authSection = $('auth-section');
+  const errorMsg = $('error-msg');
+  const usernameGroup = $('username-group');
+  const usernameInput = $('username');
+  const emailInput = $('email');
+  const passwordInput = $('password');
+
+  // Shop Logic
+  const shopSection = $('shop');
+  const welcomeMsg = $('welcome-msg');
+  const logoutBtn = $('logout-btn');
+
+  const dataForm = $('data-form');
+  const dateInput = $('record-date');
+  const descInput = $('record-desc');
+  const amountInput = $('record-amount');
+  const recordsTableBody = $('records-table').querySelector('tbody');
+
+  const exportBtn = $('export-btn');
+  const importBtn = $('import-btn');
+  const importInput = $('import-input');
+
+  // Initial state
+  let isLoginMode = true;
+
+  // Local storage keys
+  const USERS_KEY = 'accounting_shop_users';
+  const CURRENT_USER_KEY = 'accounting_shop_current_user';
+  const RECORDS_KEY_PREFIX = 'accounting_shop_records_';
+
+  // Toggle login/register
+  function toggleMode() {
+    errorMsg.textContent = '';
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+      authTitle.textContent = 'Login';
+      authSubmitBtn.textContent = 'Login';
+      toggleAuth.textContent = "Don't have an account? Register here";
+      usernameGroup.style.display = 'none';
+      usernameInput.value = '';
+    } else {
+      authTitle.textContent = 'Register';
+      authSubmitBtn.textContent = 'Register';
+      toggleAuth.textContent = 'Already have an account? Login here';
+      usernameGroup.style.display = 'block';
+    }
+    emailInput.value = '';
+    passwordInput.value = '';
+  }
+
+  // Load users from localStorage
+  function getUsers() {
+    const users = localStorage.getItem(USERS_KEY);
+    return users ? JSON.parse(users) : [];
+  }
+
+  // Save users to localStorage
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  // Find user by email
+  function findUserByEmail(email) {
+    return getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+  }
+
+  // Register a new user
+  function registerUser(username, email, password) {
+    if (!username || !email || !password) {
+      errorMsg.textContent = 'All fields are required.';
+      return false;
+    }
+    if (findUserByEmail(email)) {
+      errorMsg.textContent = 'Email already registered.';
+      return false;
+    }
+    const users = getUsers();
+    users.push({ username, email, password });
+    saveUsers(users);
+    return true;
+  }
+
+  // Login user
+  function loginUser(email, password) {
+    const user = findUserByEmail(email);
+    if (!user || user.password !== password) {
+      errorMsg.textContent = 'Invalid email or password.';
+      return null;
+    }
+    return user;
+  }
+
+  // Save current logged in user email
+  function setCurrentUser(user) {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  }
+
+  // Get current logged in user
+  function getCurrentUser() {
+    const user = localStorage.getItem(CURRENT_USER_KEY);
+    return user ? JSON.parse(user) : null;
+  }
+
+  // Logout
+  function logoutUser() {
+    localStorage.removeItem(CURRENT_USER_KEY);
+    showAuthSection();
+  }
+
+  // Show auth section
+  function showAuthSection() {
+    authSection.style.display = 'block';
+    shopSection.style.display = 'none';
+    toggleModeToLogin();
+  }
+
+  function toggleModeToLogin() {
+    if (!isLoginMode) toggleMode();
+  }
+
+  // Show shop section
+  function showShopSection(user) {
+    authSection.style.display = 'none';
+    shopSection.style.display = 'block';
+    welcomeMsg.textContent = `Welcome, ${user.username || user.email}!`;
+    loadRecords();
+  }
+
+  // Records Logic
+  function getRecordsKey(email) {
+    return RECORDS_KEY_PREFIX + email.toLowerCase();
+  }
+
+  function getRecords() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    const recordsJson = localStorage.getItem(getRecordsKey(user.email));
+    return recordsJson ? JSON.parse(recordsJson) : [];
+  }
+
+  function saveRecords(records) {
+    const user = getCurrentUser();
+    if (!user) return;
+    localStorage.setItem(getRecordsKey(user.email), JSON.stringify(records));
+  }
+
+  function addRecord(record) {
+    const records = getRecords();
+    records.push(record);
+    saveRecords(records);
+  }
+
+  function deleteRecord(index) {
+    const records = getRecords();
+    if (index < 0 || index >= records.length) return;
+    records.splice(index, 1);
+    saveRecords(records);
+  }
+
+  function renderRecords() {
+    const records = getRecords();
+    recordsTableBody.innerHTML = '';
+    records.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      const dateTd = document.createElement('td');
+      dateTd.textContent = r.date;
+      const descTd = document.createElement('td');
+      descTd.textContent = r.description;
+      const amountTd = document.createElement('td');
+      amountTd.textContent = formatCurrency(r.amount);
+      amountTd.style.color = Number(r.amount) < 0 ? '#e74c3c' : '#27ae60';
+
+      const actionsTd = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.style.background = '#e74c3c';
+      delBtn.style.color = 'white';
+      delBtn.style.border = 'none';
+      delBtn.style.padding = '4px 8px';
+      delBtn.style.borderRadius = '5px';
+      delBtn.style.cursor = 'pointer';
+      delBtn.onclick = () => {
+        if(confirm('Are you sure you want to delete this record?')) {
+          deleteRecord(i);
+          renderRecords();
+        }
+      };
+      actionsTd.appendChild(delBtn);
+
+      tr.appendChild(dateTd);
+      tr.appendChild(descTd);
+      tr.appendChild(amountTd);
+      tr.appendChild(actionsTd);
+
+      recordsTableBody.appendChild(tr);
+    });
+  }
+
+  function loadRecords() {
+    renderRecords();
+  }
+
+  // Export data to Excel (CSV actually, Excel opens CSV fine)
+  function exportToExcel() {
+    const records = getRecords();
+    if (records.length === 0) {
+      alert('No data to export.');
+      return;
+    }
+    const csvRows = [];
+    // headers
+    csvRows.push(['Date', 'Description', 'Amount'].join(','));
+    // data
+    records.forEach(r => {
+      // To avoid CSV injection attacks, prepend = with a single quote for text fields
+      const safeDesc = r.description.replace(/"/g, '""');
+      csvRows.push(`"${r.date}","${safeDesc}",${r.amount}`);
+    });
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'accounting_data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // Import data from Excel (CSV)
+  function importFromExcel(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/);
+      const newRecords = [];
+      // parse lines starting from 1 (skip header)
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        // Split CSV respecting commas in quotes
+        const parts = parseCSVLine(line);
+        if (parts.length !== 3) continue;
+        let [date, description, amount] = parts;
+        date = date.trim();
+        description = description.trim();
+        amount = parseFloat(amount);
+        if (!date || !description || isNaN(amount)) continue;
+        newRecords.push({date, description, amount: amount.toFixed(2)});
+      }
+      if (newRecords.length === 0) {
+        alert('No valid records found in the file.');
+        return;
+      }
+      const records = getRecords();
+      const mergedRecords = records.concat(newRecords);
+      saveRecords(mergedRecords);
+      renderRecords();
+      alert(`Imported ${newRecords.length} records successfully.`);
+    };
+    reader.readAsText(file);
+  }
+
+  // CSV parsing helper to handle quoted commas
+  function parseCSVLine(text) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === '"') {
+        if (insideQuotes && i + 1 < text.length && text[i+1] === '"') {
+          current += '"'; // escaped quote
+          i++;
+        } else {
+          insideQuotes = !insideQuotes;
+        }
+      } else if (char === ',' && !insideQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current);
+    return result;
+  }
+
+  // Event Listeners
+  toggleAuth.addEventListener('click', () => {
+    toggleMode();
+  });
+
+  authForm.addEventListener('submit', e => {
+    e.preventDefault();
+    errorMsg.textContent = '';
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    if (isLoginMode) {
+      const user = loginUser(email, password);
+      if (user) {
+        setCurrentUser(user);
+        showShopSection(user);
+      }
+    } else { // Register
+      const username = usernameInput.value.trim();
+      if (registerUser(username, email, password)) {
+        alert('Registration successful! You can now login.');
+        toggleMode();
+      }
+    }
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    logoutUser();
+  });
+
+  dataForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const date = dateInput.value;
+    const description = descInput.value.trim();
+    const amount = amountInput.value;
+    if (!date || !description || !amount) {
+      alert('Please fill all the fields.');
+      return;
+    }
+    addRecord({date, description, amount: parseFloat(amount).toFixed(2)});
+    renderRecords();
+    dataForm.reset();
+  });
+
+  exportBtn.addEventListener('click', exportToExcel);
+  importBtn.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', () => {
+    const file = importInput.files[0];
+    importFromExcel(file);
+    importInput.value = ''; // reset input for next upload
+  });
+
+  // Initialization: auto-login if current user exists
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    showShopSection(currentUser);
+  } else {
+    showAuthSection();
+  }
+})();
+</script>
+
+</body>
+</html>
+
